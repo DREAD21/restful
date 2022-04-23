@@ -1,0 +1,85 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Test</name>
+    </assembly>
+    <members>
+        <member name="F:Test.Controllers.AuthenticateController._config">
+            <summary>  
+            Property Declaration  
+            </summary>  
+            <param name="data"></param>  
+            <returns></returns>  
+        </member>
+        <member name="M:Test.Controllers.AuthenticateController.#ctor(Microsoft.Extensions.Configuration.IConfiguration,Test.Models.UsersContext)">
+            <summary>  
+            Constructor Injection to access all methods or simply DI(Dependency Injection)  
+            </summary>  
+        </member>
+        <member name="M:Test.Controllers.AuthenticateController.GenerateJSONWebToken(System.Security.Claims.ClaimsIdentity)">
+            <summary>  
+            Generate Json Web Token Method  
+            </summary>  
+            <param name="userInfo"></param>  
+            <returns></returns>  
+        </member>
+        <member name="M:Test.Controllers.AuthenticateController.AuthenticateUser(Test.Models.LoginModel)">
+            <summary>  
+            Hardcoded the User authentication  
+            </summary>  
+            <param name="login"></param>  
+            <returns></returns>  
+        </member>
+        <member name="M:Test.Controllers.AuthenticateController.Login(Test.Models.LoginModel)">
+            <summary>  
+            Login Authenticaton using JWT Token Authentication  
+            </summary>  
+            <param name="data"></param>  
+            <returns></returns>  
+            <response code="400">Wrong Login or Password</response>
+        </member>
+        <member name="M:Test.Controllers.AuthenticateController.Get">
+            <summary>  
+            Authorize the Method  
+            </summary>  
+            <returns></returns>  
+        </member>
+        <member name="M:Test.Controllers.AuthenticateController.CreateUser(System.String,System.String,System.String,System.Boolean,System.Int32,System.DateTime)">
+            <summary>
+            Create a new User
+            </summary>
+            <remarks>
+            Создание пользователя, доступно только admin
+            </remarks>
+            <param name="Login">Запрещены все символы кроме латинских букв и цифр</param>
+            <param name="Password">Запрещены все символы кроме латинских букв и цифр</param>
+            <param name="Name">Запрещены все символы кроме латинских и русских букв</param>
+            <param name="Admin"></param>
+            <param name="Gender">1 - мужчина, 0 - женщина, 2 - неизвестно</param>
+            <response code="403">You are not an admin</response>
+            <response code="401">not authorized</response>
+        </member>
+        <member name="M:Test.Controllers.AuthenticateController.Realusers">
+            <summary>
+            Requesting a list of all active users
+            </summary>
+            <remarks>
+            Доступно только admin
+            </remarks>
+            <response code="401">not authorized</response>
+            <response code="403">You are not an admin</response>
+        </member>
+        <member name="M:Test.Controllers.AuthenticateController.UpdateUser(System.String,System.Nullable{System.Boolean},System.Nullable{System.DateTime})">
+            <summary>
+            Update the user
+            </summary>
+            <remarks>
+            Может обновить либо сам пользователь, либо администратор
+            </remarks>
+            <param name="Name">Запрещены все символы кроме латинских и русских букв</param>
+            <param name="Gender">1 - мужчина, 0 - женщина, 2 - неизвестно</param>
+            <param name="Birthday">Формат date</param>
+            <response code="401">not authorized</response>
+        </member>
+    </members>
+</doc>
