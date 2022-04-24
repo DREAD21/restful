@@ -33,9 +33,11 @@ namespace Test
         // This method gets called by the runtime. Use this method to add services to the container.
         [Obsolete]
         public void ConfigureServices(IServiceCollection services)
-        {          
+        {
             services.AddControllers();
-            services.AddMvc();
+            services
+                .AddMvcCore();
+
             services.AddSwaggerGen(swagger =>
             {
                 //This is to generate the Default UI of Swagger Documentation  
@@ -99,6 +101,7 @@ namespace Test
                 };
             });
 
+ 
 
 
 
@@ -112,7 +115,7 @@ namespace Test
                 app.UseDeveloperExceptionPage();
             }
 
-            
+           
 
             app.UseSwagger();
 
