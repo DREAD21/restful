@@ -69,7 +69,7 @@ namespace Test.Controllers
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-            
+
             var token = new JwtSecurityToken(_config["Jwt:Issuer"],
               _config["Jwt:Issuer"],
               expires: DateTime.Now.AddMinutes(120),
@@ -84,7 +84,7 @@ namespace Test.Controllers
         private ClaimsIdentity GetIdentity(string username)
         {
             User user = db.Users.FirstOrDefault(x => x.Login == username);
-            
+
             var claims = new List<Claim>
             {
                 new Claim(ClaimsIdentity.DefaultNameClaimType, user.Login),
@@ -94,7 +94,7 @@ namespace Test.Controllers
             new ClaimsIdentity(claims, "Token", ClaimsIdentity.DefaultNameClaimType,
                 ClaimsIdentity.DefaultRoleClaimType);
             return claimsIdentity;
-            
+
 
         }
         #endregion
@@ -107,15 +107,13 @@ namespace Test.Controllers
         /// <returns></returns>  
         private async Task<User> AuthenticateUser(LoginModel login)
         {
-            db.Users.FirstOrDefault(x => x.Login == login.Login);
-
             //Validate the User Credentials      
             //Demo Purpose, I have Passed HardCoded User Information      
             //if (login.UserName == "Jay")
             //{
             //    user = new LoginModel { UserName = "Jay", Password = "123456" };
             //}
-            return db.Users.FirstOrDefault(x => x.Login == login.Login); 
+            return await db.Users.FirstOrDefaultAsync(x => x.Login == login.Login);
         }
         #endregion
 
@@ -138,7 +136,7 @@ namespace Test.Controllers
             else
             {
                 if (db.Users.FirstOrDefault(x => x.Login == data.Login).Password != data.Password)
-                    return response = BadRequest(new { Message = "Wrong Login or Password"});
+                    return response = BadRequest(new { Message = "Wrong Login or Password" });
             }
             var user = await AuthenticateUser(data);
             var identity = GetIdentity(data.Login);
@@ -185,57 +183,59 @@ namespace Test.Controllers
         /// <response code="400">Wrong data</response>
         [Authorize(Roles = "True")]
         [HttpPost]
-        public IActionResult CreateUser([Required][RegularExpression("[0-9a-zA-Z]+", ErrorMessage = "Некорректное имя")] string Login, [Required][RegularExpression("[a-zA-Z0-9]+", ErrorMessage = "Некорректный пароль")] string Password, [Required][RegularExpression("[a-zA-Zа-яА-Я]+", ErrorMessage = "Некорректное имя")] string Name, [Required] bool Admin, [Required][RegularExpression("[0-2]")] int Gender, DateTime? Birthday)
+        public async Task<IActionResult> CreateUser([Required][RegularExpression("[0-9a-zA-Z]+", ErrorMessage = "Некорректное имя")] string Login, [Required][RegularExpression("[a-zA-Z0-9]+", ErrorMessage = "Некорректный пароль")] string Password, [Required][RegularExpression("[a-zA-Zа-яА-Я]+", ErrorMessage = "Некорректное имя")] string Name, [Required] bool Admin, [Required][RegularExpression("[0-2]")] int Gender, DateTime? Birthday)
         {
-            IActionResult response;
-            if (db.Users.FirstOrDefault(x => x.Login == Login)!=null)
+            IActionResult response = null;
+            if (db.Users.FirstOrDefault(x => x.Login == Login) != null)
             {
                 return response = BadRequest(new { Message = "This login already exists" });
             }
-            
+
             db.Users.Add(new Models.User { Guid = (Guid)guid, Login = Login, Password = Password, Name = Name, Admin = Admin, Gender = Gender, CreatedOn = d, CreatedBy = User.Identity.Name, Birthday = Birthday });
-            db.SaveChanges();
+            await db.SaveChangesAsync();
             return response = Ok(new { Message = "Success" });
-            
-            
+
+
         }
 
         #endregion
 
-        #endregion
-
-        #region UpdateUser
-        /// <summary>
-        /// Update the user
-        /// </summary>
-        /// <remarks>
-        /// Может обновить либо сам пользователь, либо администратор
-        /// </remarks>
-        /// <param name="Name">Запрещены все символы кроме латинских и русских букв</param>
-        /// <param name="Gender">1 - мужчина, 0 - женщина, 2 - неизвестно</param>
-        /// <param name="Birthday">Формат date</param>
-        /// <response code="401">not authorized</response>
-        [HttpPut]
-        public void UpdateUser([RegularExpression("[a-zA-Zа-яА-Я]+", ErrorMessage = "Некорректное имя")] string Name, bool? Gender, DateTime? Birthday)
-        {
-            if (!string.IsNullOrEmpty(Name))
-            {
-                db.Update(Name);
-                db.SaveChanges();
-            }
-            if (Gender != null)
-            {
-                db.Update(Gender);
-            }
-            if (Birthday != null)
-            {
-                db.Update(Birthday);
-            }
-
-        }
         #endregion
 
         #region Read
+
+        #region UserRequest
+        /// <summary>
+        /// UserRequest
+        /// </summary>
+        /// <remarks>
+        /// Доступно только самому пользователю, если он активен
+        /// </remarks>
+        /// <param name="Login">Логин</param>
+        /// <param name="password">Пароль</param>
+        /// <response code="400">Wrong Login</response>
+        /// <response code="401">not authorized</response>
+        [HttpGet, Route("Use Request")]
+        public async Task<IActionResult> UserRequest([Required] string Login, [Required] string password)
+        { 
+            var res = await db.Users.FirstOrDefaultAsync(x => x.Login == User.Identity.Name);
+            if (res.RevokedOn != null)
+                return BadRequest(new { Message = "User is not active" });
+            //if (res == null)
+            //    return BadRequest(new { Message = "Wrong Login or Password" });
+
+            //if (password != res.Password)
+            //    return BadRequest(new { Message = "Wrong Login or Password" });
+            if (Login != User.Identity.Name || password != res.Password)
+            {
+                return BadRequest(new { Message="Wrong Login or Password"});
+            }
+
+            return Json(res);
+        }
+
+
+        #endregion
 
         #region Age
         /// <summary>
@@ -381,6 +381,19 @@ namespace Test.Controllers
         }
 
         #endregion
+
+        //#region Update
+        //public async Task<IActionResult> UpdatePassword([Required]string new_pass, string login)
+        //{
+        //    IActionResult response;
+
+
+        //    return null;
+        //} 
+
+
+        //#endregion
     }
+
 }
 

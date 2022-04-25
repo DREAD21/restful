@@ -53,20 +53,21 @@
             <param name="Name">Запрещены все символы кроме латинских и русских букв</param>
             <param name="Admin"></param>
             <param name="Gender">1 - мужчина, 0 - женщина, 2 - неизвестно</param>
+            <param name="Birthday"></param>
             <response code="403">You are not an admin</response>
             <response code="401">not authorized</response>
             <response code="400">Wrong data</response>
         </member>
-        <member name="M:Test.Controllers.AuthenticateController.UpdateUser(System.String,System.Nullable{System.Boolean},System.Nullable{System.DateTime})">
+        <member name="M:Test.Controllers.AuthenticateController.UserRequest(System.String,System.String)">
             <summary>
-            Update the user
+            UserRequest
             </summary>
             <remarks>
-            Может обновить либо сам пользователь, либо администратор
+            Доступно только самому пользователю, если он активен
             </remarks>
-            <param name="Name">Запрещены все символы кроме латинских и русских букв</param>
-            <param name="Gender">1 - мужчина, 0 - женщина, 2 - неизвестно</param>
-            <param name="Birthday">Формат date</param>
+            <param name="Login">Логин</param>
+            <param name="password">Пароль</param>
+            <response code="400">Wrong Login</response>
             <response code="401">not authorized</response>
         </member>
         <member name="M:Test.Controllers.AuthenticateController.Age(System.Int32)">
