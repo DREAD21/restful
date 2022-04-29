@@ -176,19 +176,15 @@ namespace Test.Controllers
         /// <param name="Admin"></param>
         /// <param name="Gender">1 - мужчина, 0 - женщина, 2 - неизвестно</param>
         /// <param name="Birthday"></param>
-        /// <param name="LoginPassword">Пароль пользователя, выполняющего запрос</param>
-        /// <param name="LoginUser">Логин пользователя, выполняющего запрос</param>
+
         /// <response code="403">You are not an admin</response>
         /// <response code="401">not authorized</response>
         /// <response code="400">Wrong data</response>
         [Authorize(Roles = "True"), Route("Create User")]
         [HttpPost]
-        public async Task<IActionResult> CreateUser([Required]string LoginUser, [Required]string LoginPassword, [Required][RegularExpression("[0-9a-zA-Z]+", ErrorMessage = "Некорректное имя")] string Login, [Required][RegularExpression("[a-zA-Z0-9]+", ErrorMessage = "Некорректный пароль")] string Password, [Required][RegularExpression("[a-zA-Zа-яА-Я]+", ErrorMessage = "Некорректное имя")] string Name, [Required] bool Admin, [Required][RegularExpression("[0-2]")] int Gender, DateTime? Birthday)
+        public async Task<IActionResult> CreateUser([Required][RegularExpression("[0-9a-zA-Z]+", ErrorMessage = "Некорректное имя")] string Login, [Required][RegularExpression("[a-zA-Z0-9]+", ErrorMessage = "Некорректный пароль")] string Password, [Required][RegularExpression("[a-zA-Zа-яА-Я]+", ErrorMessage = "Некорректное имя")] string Name, [Required] bool Admin, [Required][RegularExpression("[0-2]")] int Gender, DateTime? Birthday)
         {
-            if(LoginUser != User.Identity.Name || db.Users.FirstOrDefault(x=>x.Login==User.Identity.Name).Password != LoginPassword)
-            {
-                return BadRequest(new { Message = "Wrond Login or Password" });
-            }
+           
             if (db.Users.FirstOrDefault(x => x.Login == Login) != null)
             {
                 return BadRequest(new { Message = "This login already exists" });
@@ -207,7 +203,7 @@ namespace Test.Controllers
 
         #region UserRequest
         /// <summary>
-        /// UserRequest
+        /// Запрос пользователя по логину и паролю
         /// </summary>
         /// <remarks>
         /// Доступно только самому пользователю, если он активен
@@ -248,17 +244,11 @@ namespace Test.Controllers
         /// Доступно только администратору
         /// </remarks>
         /// <param name="age">Возраст</param>
-        /// <param name="LoginPassword">Пароль пользователя, выполняющего запрос</param>
-        /// <param name="LoginUser">Логин пользователя, выполняющего запрос</param>
         /// <response code="403">not an admin</response>
         [HttpGet, Route("Age")]
         [Authorize(Roles ="True")]
-        public IActionResult Age([Required] string LoginUser, [Required] string LoginPassword, [Required, FromQuery] int age)
+        public IActionResult Age([Required, FromQuery] int age)
         {
-            if (LoginUser != User.Identity.Name || db.Users.FirstOrDefault(x => x.Login == User.Identity.Name).Password != LoginPassword)
-            {
-                return BadRequest(new { Message = "Wrond Login or Password" });
-            }
             year = d.Year;
             month = d.Month;
             day = d.Day;
@@ -279,18 +269,12 @@ namespace Test.Controllers
         /// <remarks>
         /// Доступно только admin
         /// </remarks>
-        /// <param name="LoginPassword">Пароль пользователя, выполняющего запрос</param>
-        /// <param name="LoginUser">Логин пользователя, выполняющего запрос</param>
         /// <response code="401">not authorized</response>
         /// <response code="403">You are not an admin</response>
         [HttpGet]
         [Authorize(Roles = "True")]
-        public IActionResult Realusers([Required] string LoginUser, [Required] string LoginPassword)
-        {
-            if (LoginUser != User.Identity.Name || db.Users.FirstOrDefault(x => x.Login == User.Identity.Name).Password != LoginPassword)
-            {
-                BadRequest(new { Message = "Wrond Login or Password" });
-            }
+        public IActionResult Realusers()
+        {           
             var selected = from p in db.Users
                            where p.RevokedOn == null
                            orderby p.CreatedOn
@@ -308,18 +292,13 @@ namespace Test.Controllers
         /// Доступно только администратору
         /// </remarks>
         /// <param name="Login">Login</param>
-        /// <param name="LoginPassword">Пароль пользователя, выполняющего запрос</param>
-        /// <param name="LoginUser">Логин пользователя, выполняющего запрос</param>
         /// <response code="403">Not an admin</response>
         /// <response code="400">Wrong Login</response>
         [Authorize(Roles = "True")]
         [HttpGet, Route("Login request")]
-        public async Task<IActionResult> LoginRequest([Required] string LoginUser, [Required] string LoginPassword, [Required][RegularExpression("[0-9a-zA-Z]+", ErrorMessage = "Некорректное имя")] string Login)
+        public async Task<IActionResult> LoginRequest([Required][RegularExpression("[0-9a-zA-Z]+", ErrorMessage = "Некорректное имя")] string Login)
         {
-            if (LoginUser != User.Identity.Name || db.Users.FirstOrDefault(x => x.Login == User.Identity.Name).Password != LoginPassword)
-            {
-                return BadRequest(new { Message = "Wrond Login or Password" });
-            }
+            
             var user = await db.Users.FirstOrDefaultAsync(x => x.Login == Login);
             if (user == null)
             {
@@ -340,20 +319,15 @@ namespace Test.Controllers
         /// <remarks>
         /// Доступно только администратору
         /// </remarks>
-        /// <param name="LoginPassword">Пароль пользователя, выполняющего запрос</param>
-        /// <param name="LoginUser">Логин пользователя, выполняющего запрос</param>
         /// <param name="Login">Login</param>
         /// <param name="Type">True - полное удаление, False - мягкое удаление</param>
         /// <response code="403">Not an admin</response>
         /// <response code="400">Wrong Login</response>
         [HttpDelete]
         [Authorize(Roles ="True")]
-        public IActionResult DeleteUser([Required] string LoginUser, [Required] string LoginPassword, [Required]string Login, [Required]bool Type)
+        public IActionResult DeleteUser([Required]string Login, [Required]bool Type)
         {
-            if (LoginUser != User.Identity.Name || db.Users.FirstOrDefault(x => x.Login == User.Identity.Name).Password != LoginPassword)
-            {
-                return BadRequest(new { Message = "Wrond Login or Password" });
-            }
+           
             User _user = db.Users.FirstOrDefault(x => x.Login == Login);
             if (_user == null)
                 return BadRequest(new { Message = "Wrond Login" });
@@ -382,19 +356,14 @@ namespace Test.Controllers
         /// <remarks>
         /// Доступно только администратору
         /// </remarks>
-        /// <param name="LoginPassword">Пароль пользователя, выполняющего запрос</param>
-        /// <param name="LoginUser">Логин пользователя, выполняющего запрос</param>
         /// <param name="Login">Login</param>
         /// <response code="403">Not an admin</response>
         /// <response code="400">Wrong Login</response>
         [HttpPut]
         [Authorize(Roles = "True"), Route("Update-2")]
-        public IActionResult Upate2([Required] string LoginUser, [Required] string LoginPassword, [Required] string Login)
+        public IActionResult Upate2([Required] string Login)
         {
-            if (LoginUser != User.Identity.Name || db.Users.FirstOrDefault(x => x.Login == User.Identity.Name).Password != LoginPassword)
-            {
-                return BadRequest(new { Message = "Wrond Login or Password" });
-            }
+           
             User _user = db.Users.FirstOrDefault(x => x.Login == Login);
             if (_user == null)
                 return  BadRequest(new { Message = "Wrond Login" });
@@ -420,20 +389,15 @@ namespace Test.Controllers
         /// <remarks>
         /// Доступно либо саммому пользователю, либо администратору
         /// </remarks>
-        /// <param name="LoginPassword">Пароль пользователя, выполняющего запрос</param>
-        /// <param name="LoginUser">Логин пользователя, выполняющего запрос</param>
         /// <param name="login">Логин пользователя, для которого происходит смена пароля</param>
         /// <param name="new_pass">Новый пароль</param>
         /// <response code="403">Not an admin</response>
         /// <response code="400">Wrong Login</response>
         [HttpPut]
         [Route("Update Password")]
-        public async Task<IActionResult> UpdatePassword([Required] string LoginUser, [Required] string LoginPassword,[Required] string login, [Required][RegularExpression("[a-zA-Z0-9]+", ErrorMessage = "Некорректный пароль")] string new_pass)
+        public async Task<IActionResult> UpdatePassword([Required] string login, [Required][RegularExpression("[a-zA-Z0-9]+", ErrorMessage = "Некорректный пароль")] string new_pass)
         {
-            if (LoginUser != User.Identity.Name || db.Users.FirstOrDefault(x => x.Login == User.Identity.Name).Password != LoginPassword)
-            {
-                return BadRequest(new { Message = "Wrond Login or Password" });
-            }
+            var LoginUser = User.Identity.Name;
             if(db.Users.FirstOrDefault(x=>x.Login == LoginUser).Admin)
             {
                 if(db.Users.FirstOrDefault(x=>x.Login == login) != null)
@@ -472,20 +436,15 @@ namespace Test.Controllers
         /// <remarks>
         /// Доступно либо саммому пользователю, либо администратору
         /// </remarks>
-        /// <param name="LoginPassword">Пароль пользователя, выполняющего запрос</param>
-        /// <param name="LoginUser">Логин пользователя, выполняющего запрос</param>
         /// <param name="login">Логин пользователя, для которого происходит смена пароля</param>
         /// <param name="new_login">Новый логин</param>
         /// <response code="403">Not an admin</response>
         /// <response code="400">Wrong Login</response>
         [HttpPut]
         [Route("Update Login")]
-        public async Task<IActionResult> UpdateLogin([Required] string LoginUser, [Required] string LoginPassword, [Required] string login, [Required][RegularExpression("[a-zA-Z0-9]+", ErrorMessage = "Некорректный пароль")] string new_login)
+        public async Task<IActionResult> UpdateLogin([Required] string login, [Required][RegularExpression("[a-zA-Z0-9]+", ErrorMessage = "Некорректный пароль")] string new_login)
         {
-            if (LoginUser != User.Identity.Name || db.Users.FirstOrDefault(x => x.Login == User.Identity.Name).Password != LoginPassword)
-            {
-                return BadRequest(new { Message = "Wrond Login or Password" });
-            }
+            var LoginUser = User.Identity.Name;
             if (db.Users.FirstOrDefault(x => x.Login == LoginUser).Admin)
             {
                 if (db.Users.FirstOrDefault(x => x.Login == login) != null)
@@ -535,8 +494,6 @@ namespace Test.Controllers
         /// <remarks>
         /// Доступно либо саммому пользователю, либо администратору
         /// </remarks>
-        /// <param name="LoginPassword">Пароль пользователя, выполняющего запрос</param>
-        /// <param name="LoginUser">Логин пользователя, выполняющего запрос</param>
         /// <param name="login">Логин пользователя, для которого происходит смена пароля</param>
         /// <param name="Name">Новое имя </param>
         /// <param name="Birtday">Новая дата рождения</param>
@@ -545,12 +502,9 @@ namespace Test.Controllers
         /// <response code="400">Wrong Login</response>
         [Route("Update Name, Birthday or Gender")]
         [HttpPut]
-        public async Task<IActionResult> Update_Name_Birthday_Gender([Required] string LoginUser, [Required] string LoginPassword, [Required] string login, [RegularExpression(@"[a-zA-Zа-яА-Я]+", ErrorMessage = "Некорректное имя")] string Name, DateTime? Birtday, [RegularExpression(@"[0,1,2]")]int? Gender)
+        public async Task<IActionResult> Update_Name_Birthday_Gender([Required] string login, [RegularExpression(@"[a-zA-Zа-яА-Я]+", ErrorMessage = "Некорректное имя")] string Name, DateTime? Birtday, [RegularExpression(@"[0,1,2]")]int? Gender)
         {
-            if (LoginUser != User.Identity.Name || db.Users.FirstOrDefault(x => x.Login == User.Identity.Name).Password != LoginPassword)
-            {
-                return BadRequest(new { Message = "Wrond Login or Password" });
-            }
+            var LoginUser = User.Identity.Name;
             if (db.Users.FirstOrDefault(x => x.Login == LoginUser).Admin)
             {
                 if (db.Users.FirstOrDefault(x => x.Login == login) != null)

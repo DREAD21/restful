@@ -41,7 +41,7 @@
             </summary>  
             <returns></returns>  
         </member>
-        <member name="M:Test.Controllers.AuthenticateController.CreateUser(System.String,System.String,System.String,System.String,System.String,System.Boolean,System.Int32,System.Nullable{System.DateTime})">
+        <member name="M:Test.Controllers.AuthenticateController.CreateUser(System.String,System.String,System.String,System.Boolean,System.Int32,System.Nullable{System.DateTime})">
             <summary>
             Create a new User
             </summary>
@@ -54,15 +54,13 @@
             <param name="Admin"></param>
             <param name="Gender">1 - мужчина, 0 - женщина, 2 - неизвестно</param>
             <param name="Birthday"></param>
-            <param name="LoginPassword">Пароль пользователя, выполняющего запрос</param>
-            <param name="LoginUser">Логин пользователя, выполняющего запрос</param>
             <response code="403">You are not an admin</response>
             <response code="401">not authorized</response>
             <response code="400">Wrong data</response>
         </member>
         <member name="M:Test.Controllers.AuthenticateController.UserRequest(System.String,System.String)">
             <summary>
-            UserRequest
+            Запрос пользователя по логину и паролю
             </summary>
             <remarks>
             Доступно только самому пользователю, если он активен
@@ -72,7 +70,7 @@
             <response code="400">Wrong Login</response>
             <response code="401">not authorized</response>
         </member>
-        <member name="M:Test.Controllers.AuthenticateController.Age(System.String,System.String,System.Int32)">
+        <member name="M:Test.Controllers.AuthenticateController.Age(System.Int32)">
             <summary>
             Запрос всех пользователей старше определённого возраста
             </summary>
@@ -80,23 +78,19 @@
             Доступно только администратору
             </remarks>
             <param name="age">Возраст</param>
-            <param name="LoginPassword">Пароль пользователя, выполняющего запрос</param>
-            <param name="LoginUser">Логин пользователя, выполняющего запрос</param>
             <response code="403">not an admin</response>
         </member>
-        <member name="M:Test.Controllers.AuthenticateController.Realusers(System.String,System.String)">
+        <member name="M:Test.Controllers.AuthenticateController.Realusers">
             <summary>
             Запрос списка всех активных пользователей,
             </summary>
             <remarks>
             Доступно только admin
             </remarks>
-            <param name="LoginPassword">Пароль пользователя, выполняющего запрос</param>
-            <param name="LoginUser">Логин пользователя, выполняющего запрос</param>
             <response code="401">not authorized</response>
             <response code="403">You are not an admin</response>
         </member>
-        <member name="M:Test.Controllers.AuthenticateController.LoginRequest(System.String,System.String,System.String)">
+        <member name="M:Test.Controllers.AuthenticateController.LoginRequest(System.String)">
             <summary>
             Запрос пользователя по логину
             </summary>
@@ -104,75 +98,63 @@
             Доступно только администратору
             </remarks>
             <param name="Login">Login</param>
-            <param name="LoginPassword">Пароль пользователя, выполняющего запрос</param>
-            <param name="LoginUser">Логин пользователя, выполняющего запрос</param>
             <response code="403">Not an admin</response>
             <response code="400">Wrong Login</response>
         </member>
-        <member name="M:Test.Controllers.AuthenticateController.DeleteUser(System.String,System.String,System.String,System.Boolean)">
+        <member name="M:Test.Controllers.AuthenticateController.DeleteUser(System.String,System.Boolean)">
             <summary>
             Удаление пользователя по логину полное или мягкое
             </summary>
             <remarks>
             Доступно только администратору
             </remarks>
-            <param name="LoginPassword">Пароль пользователя, выполняющего запрос</param>
-            <param name="LoginUser">Логин пользователя, выполняющего запрос</param>
             <param name="Login">Login</param>
             <param name="Type">True - полное удаление, False - мягкое удаление</param>
             <response code="403">Not an admin</response>
             <response code="400">Wrong Login</response>
         </member>
-        <member name="M:Test.Controllers.AuthenticateController.Upate2(System.String,System.String,System.String)">
+        <member name="M:Test.Controllers.AuthenticateController.Upate2(System.String)">
             <summary>
             Восстановление пользователя - Очистка полей (RevokedOn, RevokedBy)
             </summary>
             <remarks>
             Доступно только администратору
             </remarks>
-            <param name="LoginPassword">Пароль пользователя, выполняющего запрос</param>
-            <param name="LoginUser">Логин пользователя, выполняющего запрос</param>
             <param name="Login">Login</param>
             <response code="403">Not an admin</response>
             <response code="400">Wrong Login</response>
         </member>
-        <member name="M:Test.Controllers.AuthenticateController.UpdatePassword(System.String,System.String,System.String,System.String)">
+        <member name="M:Test.Controllers.AuthenticateController.UpdatePassword(System.String,System.String)">
             <summary>
             Изменение пароля
             </summary>
             <remarks>
             Доступно либо саммому пользователю, либо администратору
             </remarks>
-            <param name="LoginPassword">Пароль пользователя, выполняющего запрос</param>
-            <param name="LoginUser">Логин пользователя, выполняющего запрос</param>
             <param name="login">Логин пользователя, для которого происходит смена пароля</param>
             <param name="new_pass">Новый пароль</param>
             <response code="403">Not an admin</response>
             <response code="400">Wrong Login</response>
         </member>
-        <member name="M:Test.Controllers.AuthenticateController.UpdateLogin(System.String,System.String,System.String,System.String)">
+        <member name="M:Test.Controllers.AuthenticateController.UpdateLogin(System.String,System.String)">
             <summary>
             Изменение логина
             </summary>
             <remarks>
             Доступно либо саммому пользователю, либо администратору
             </remarks>
-            <param name="LoginPassword">Пароль пользователя, выполняющего запрос</param>
-            <param name="LoginUser">Логин пользователя, выполняющего запрос</param>
             <param name="login">Логин пользователя, для которого происходит смена пароля</param>
             <param name="new_login">Новый логин</param>
             <response code="403">Not an admin</response>
             <response code="400">Wrong Login</response>
         </member>
-        <member name="M:Test.Controllers.AuthenticateController.Update_Name_Birthday_Gender(System.String,System.String,System.String,System.String,System.Nullable{System.DateTime},System.Nullable{System.Int32})">
+        <member name="M:Test.Controllers.AuthenticateController.Update_Name_Birthday_Gender(System.String,System.String,System.Nullable{System.DateTime},System.Nullable{System.Int32})">
             <summary>
             Изменение имени, пола или даты рождения пользователя
             </summary>
             <remarks>
             Доступно либо саммому пользователю, либо администратору
             </remarks>
-            <param name="LoginPassword">Пароль пользователя, выполняющего запрос</param>
-            <param name="LoginUser">Логин пользователя, выполняющего запрос</param>
             <param name="login">Логин пользователя, для которого происходит смена пароля</param>
             <param name="Name">Новое имя </param>
             <param name="Birtday">Новая дата рождения</param>
