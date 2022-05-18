@@ -29,36 +29,13 @@ namespace Test.Controllers
         public int year;
         public int month;
         public int day;
-        public TestController(UsersContext context)
-        {
-            db = context;
-        }
-
-
-
-    }
-    public class AuthenticateController : TestController
-    {
-        #region Property  
-        /// <summary>  
-        /// Property Declaration  
-        /// </summary>  
-        /// <returns></returns>  
         private IConfiguration _config;
-        UsersContext db;
-        #endregion
-
-        #region Contructor Injector  
-        /// <summary>  
-        /// Constructor Injection to access all methods or simply DI(Dependency Injection)  
-        /// </summary>  
-        public AuthenticateController(IConfiguration config, UsersContext context) : base(context)
+        public TestController(UsersContext context, IConfiguration config)
         {
-            _config = config;
             db = context;
+            _config = config;
         }
-        #endregion
-
+       
         #region GenerateJWT  
         /// <summary>  
         /// Generate Json Web Token Method  
@@ -184,7 +161,7 @@ namespace Test.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateUser([Required][RegularExpression("[0-9a-zA-Z]+", ErrorMessage = "Некорректное имя")] string Login, [Required][RegularExpression("[a-zA-Z0-9]+", ErrorMessage = "Некорректный пароль")] string Password, [Required][RegularExpression("[a-zA-Zа-яА-Я]+", ErrorMessage = "Некорректное имя")] string Name, [Required] bool Admin, [Required][RegularExpression("[0-2]")] int Gender, DateTime? Birthday)
         {
-           
+
             if (db.Users.FirstOrDefault(x => x.Login == Login) != null)
             {
                 return BadRequest(new { Message = "This login already exists" });
@@ -219,8 +196,8 @@ namespace Test.Controllers
             if (Login != User.Identity.Name || password != res.Password)
             {
                 return BadRequest(new { Message = "Wrong Login or Password" });
-            }        
-           
+            }
+
             if (res.RevokedOn != null)
                 return BadRequest(new { Message = "User is not active" });
             //if (res == null)
@@ -228,7 +205,7 @@ namespace Test.Controllers
 
             //if (password != res.Password)
             //    return BadRequest(new { Message = "Wrong Login or Password" });
-       
+
 
             return Json(res);
         }
@@ -246,7 +223,7 @@ namespace Test.Controllers
         /// <param name="age">Возраст</param>
         /// <response code="403">not an admin</response>
         [HttpGet, Route("Age")]
-        [Authorize(Roles ="True")]
+        [Authorize(Roles = "True")]
         public IActionResult Age([Required, FromQuery] int age)
         {
             year = d.Year;
@@ -274,7 +251,7 @@ namespace Test.Controllers
         [HttpGet]
         [Authorize(Roles = "True")]
         public IActionResult Realusers()
-        {           
+        {
             var selected = from p in db.Users
                            where p.RevokedOn == null
                            orderby p.CreatedOn
@@ -298,7 +275,7 @@ namespace Test.Controllers
         [HttpGet, Route("Login request")]
         public async Task<IActionResult> LoginRequest([Required][RegularExpression("[0-9a-zA-Z]+", ErrorMessage = "Некорректное имя")] string Login)
         {
-            
+
             var user = await db.Users.FirstOrDefaultAsync(x => x.Login == Login);
             if (user == null)
             {
@@ -324,24 +301,23 @@ namespace Test.Controllers
         /// <response code="403">Not an admin</response>
         /// <response code="400">Wrong Login</response>
         [HttpDelete]
-        [Authorize(Roles ="True")]
-        public IActionResult DeleteUser([Required]string Login, [Required]bool Type)
+        [Authorize(Roles = "True")]
+        public async Task<IActionResult> DeleteUser([Required] string Login, [Required] bool Type)
         {
-           
             User _user = db.Users.FirstOrDefault(x => x.Login == Login);
             if (_user == null)
                 return BadRequest(new { Message = "Wrond Login" });
             if (Type == true)
             {
                 db.Users.Remove(_user);
-                db.SaveChanges();
+                await db.SaveChangesAsync();
             }
             else
             {
                 var admin_name = User.Identity.Name.ToString();
                 _user.RevokedBy = admin_name;
                 _user.RevokedOn = d;
-                db.SaveChanges();
+                await db.SaveChangesAsync();
             }
             return Ok(new { Message = "Success" });
         }
@@ -361,20 +337,20 @@ namespace Test.Controllers
         /// <response code="400">Wrong Login</response>
         [HttpPut]
         [Authorize(Roles = "True"), Route("Update-2")]
-        public IActionResult Upate2([Required] string Login)
+        public async Task<IActionResult> Upate2([Required] string Login)
         {
-           
+
             User _user = db.Users.FirstOrDefault(x => x.Login == Login);
             if (_user == null)
-                return  BadRequest(new { Message = "Wrond Login" });
+                return BadRequest(new { Message = "Wrond Login" });
             if (_user.RevokedOn == null || _user.RevokedBy == null)
             {
                 return BadRequest(new { Message = "This user has not been deleted" });
             }
             _user.RevokedBy = null;
             _user.RevokedOn = null;
-            db.SaveChanges();
-            return  Ok(new { Message = "Success"});
+            await db.SaveChangesAsync();
+            return Ok(new { Message = "Success" });
         }
 
         #endregion
@@ -398,13 +374,13 @@ namespace Test.Controllers
         public async Task<IActionResult> UpdatePassword([Required] string login, [Required][RegularExpression("[a-zA-Z0-9]+", ErrorMessage = "Некорректный пароль")] string new_pass)
         {
             var LoginUser = User.Identity.Name;
-            if(db.Users.FirstOrDefault(x=>x.Login == LoginUser).Admin)
+            if (db.Users.FirstOrDefault(x => x.Login == LoginUser).Admin)
             {
-                if(db.Users.FirstOrDefault(x=>x.Login == login) != null)
+                if (db.Users.FirstOrDefault(x => x.Login == login) != null)
                 {
                     User _user = await db.Users.FirstOrDefaultAsync(x => x.Login == login);
                     _user.Password = new_pass;
-                    db.SaveChanges();
+                    await db.SaveChangesAsync();
                 }
                 else
                 {
@@ -423,7 +399,7 @@ namespace Test.Controllers
                 }
                 User _user = await db.Users.FirstOrDefaultAsync(x => x.Login == LoginUser);
                 _user.Password = new_pass;
-                db.SaveChanges();
+                await db.SaveChangesAsync();
             }
             return Ok(new { Message = "Success" });
         }
@@ -442,20 +418,19 @@ namespace Test.Controllers
         /// <response code="400">Wrong Login</response>
         [HttpPut]
         [Route("Update Login")]
-        public async Task<IActionResult> UpdateLogin([Required] string login, [Required][RegularExpression("[a-zA-Z0-9]+", ErrorMessage = "Некорректный пароль")] string new_login)
-        {
-            var LoginUser = User.Identity.Name;
-            if (db.Users.FirstOrDefault(x => x.Login == LoginUser).Admin)
+        public async Task<IActionResult> UpdateLogin([Required] string login, [Required][RegularExpression("[a-zA-Z0-9]+", ErrorMessage = "Некорректный логин")] string new_login)
+        {          
+            if (db.Users.FirstOrDefault(x => x.Login == User.Identity.Name).Admin)
             {
                 if (db.Users.FirstOrDefault(x => x.Login == login) != null)
                 {
                     User _user = await db.Users.FirstOrDefaultAsync(x => x.Login == login);
-                    if(await db.Users.FirstOrDefaultAsync(x=>x.Login == new_login) != null)
+                    if (await db.Users.FirstOrDefaultAsync(x => x.Login == new_login) != null)
                     {
                         return BadRequest(new { Message = "This login is already exists" });
                     }
                     _user.Login = new_login;
-                    db.SaveChanges();
+                    await db.SaveChangesAsync();
                 }
                 else
                 {
@@ -464,11 +439,11 @@ namespace Test.Controllers
             }
             else
             {
-                if (db.Users.FirstOrDefault(x => x.Login == LoginUser).RevokedOn != null)
+                if (db.Users.FirstOrDefault(x => x.Login == login).RevokedOn != null)
                 {
                     return BadRequest(new { Message = "Revoked On is not null" });
                 }
-                if (login != LoginUser)
+                if (login != User.Identity.Name)
                 {
                     return BadRequest(new { Message = "A non-administrator user can only change his password" });
                 }
@@ -476,9 +451,9 @@ namespace Test.Controllers
                 {
                     return BadRequest(new { Message = "This login is already exists" });
                 }
-                User _user = await db.Users.FirstOrDefaultAsync(x => x.Login == LoginUser);
+                User _user = await db.Users.FirstOrDefaultAsync(x => x.Login == login);
                 _user.Login = new_login;
-                db.SaveChanges();
+                await db.SaveChangesAsync();
             }
             return Ok(new { Message = "Success" });
 
@@ -502,7 +477,7 @@ namespace Test.Controllers
         /// <response code="400">Wrong Login</response>
         [Route("Update Name, Birthday or Gender")]
         [HttpPut]
-        public async Task<IActionResult> Update_Name_Birthday_Gender([Required] string login, [RegularExpression(@"[a-zA-Zа-яА-Я]+", ErrorMessage = "Некорректное имя")] string Name, DateTime? Birtday, [RegularExpression(@"[0,1,2]")]int? Gender)
+        public async Task<IActionResult> Update_Name_Birthday_Gender([Required] string login, [RegularExpression(@"[a-zA-Zа-яА-Я]+", ErrorMessage = "Некорректное имя")] string Name, DateTime? Birtday, [RegularExpression(@"[0,1,2]")] int? Gender)
         {
             var LoginUser = User.Identity.Name;
             if (db.Users.FirstOrDefault(x => x.Login == LoginUser).Admin)
@@ -514,16 +489,16 @@ namespace Test.Controllers
                     {
                         _user.Name = Name;
                     }
-                    if(Birtday != null)
+                    if (Birtday != null)
                     {
                         _user.Birthday = Birtday;
                     }
-                    if(Gender != null)
+                    if (Gender != null)
                     {
                         _user.Gender = (int)Gender;
                     }
-                    
-                    db.SaveChanges();
+
+                    await db.SaveChangesAsync();
                 }
                 else
                 {
@@ -554,7 +529,7 @@ namespace Test.Controllers
                     _user.Gender = (int)Gender;
                 }
 
-                db.SaveChanges();
+                await db.SaveChangesAsync();
             }
             return Ok(new { Message = "Success" });
         }
@@ -565,5 +540,8 @@ namespace Test.Controllers
         #endregion
     }
 
+
+
+   
 }
 
