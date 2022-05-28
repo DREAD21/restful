@@ -35,7 +35,7 @@ namespace Test.Controllers
             db = context;
             _config = config;
         }
-       
+
         #region GenerateJWT  
         /// <summary>  
         /// Generate Json Web Token Method  
@@ -76,25 +76,21 @@ namespace Test.Controllers
 
         #region AuthenticateUser  
         /// <summary>  
-        /// Hardcoded the User authentication  
+        /// 
         /// </summary>  
         /// <param name="login"></param>  
         /// <returns></returns>  
         private async Task<User> AuthenticateUser(LoginModel login)
         {
-            //Validate the User Credentials      
-            //Demo Purpose, I have Passed HardCoded User Information      
-            //if (login.UserName == "Jay")
-            //{
-            //    user = new LoginModel { UserName = "Jay", Password = "123456" };
-            //}
+
             return await db.Users.FirstOrDefaultAsync(x => x.Login == login.Login);
         }
         #endregion
 
         #region Login Validation  
         /// <summary>  
-        /// Login Authenticaton using JWT Token Authentication  
+        /// Login Authenticaton using JWT Token Authentication 
+        /// 
         /// </summary>  
         /// <param name="data"></param>  
         /// <returns></returns>  
@@ -118,25 +114,13 @@ namespace Test.Controllers
             if (data != null)
             {
                 var tokenString = GenerateJSONWebToken(identity);
-                response = Ok(new { Token = tokenString, Message = "Success" });
+                response = Ok(new { Token = tokenString, Message = "Success", Message2 = "Для того, чтобы авторизоваться, скопируйте токен и вставьте в поле, после нажатия кнопки Authorize, введите Bearer + токен " });
             }
             return response;
         }
         #endregion
 
-        #region Get  
-        /// <summary>  
-        /// Authorize the Method  
-        /// </summary>  
-        /// <returns></returns>  
-        [HttpGet(nameof(Get))]
-        public string Get()
-        {
-            return User.Identity.Name.ToString();
-        }
-
-
-        #endregion
+        
 
         #region Create
 
@@ -153,7 +137,6 @@ namespace Test.Controllers
         /// <param name="Admin"></param>
         /// <param name="Gender">1 - мужчина, 0 - женщина, 2 - неизвестно</param>
         /// <param name="Birthday"></param>
-
         /// <response code="403">You are not an admin</response>
         /// <response code="401">not authorized</response>
         /// <response code="400">Wrong data</response>
@@ -248,7 +231,7 @@ namespace Test.Controllers
         /// </remarks>
         /// <response code="401">not authorized</response>
         /// <response code="403">You are not an admin</response>
-        [HttpGet]
+        [HttpGet, Route("Active users")]
         [Authorize(Roles = "True")]
         public IActionResult Realusers()
         {
@@ -300,7 +283,7 @@ namespace Test.Controllers
         /// <param name="Type">True - полное удаление, False - мягкое удаление</param>
         /// <response code="403">Not an admin</response>
         /// <response code="400">Wrong Login</response>
-        [HttpDelete]
+        [HttpDelete, Route("Delete User")]
         [Authorize(Roles = "True")]
         public async Task<IActionResult> DeleteUser([Required] string Login, [Required] bool Type)
         {
@@ -380,6 +363,8 @@ namespace Test.Controllers
                 {
                     User _user = await db.Users.FirstOrDefaultAsync(x => x.Login == login);
                     _user.Password = new_pass;
+                    _user.ModifiedBy = LoginUser;
+                    _user.ModifiedOn = d;
                     await db.SaveChangesAsync();
                 }
                 else
@@ -399,6 +384,8 @@ namespace Test.Controllers
                 }
                 User _user = await db.Users.FirstOrDefaultAsync(x => x.Login == LoginUser);
                 _user.Password = new_pass;
+                _user.ModifiedBy = login;
+                _user.ModifiedOn = d;
                 await db.SaveChangesAsync();
             }
             return Ok(new { Message = "Success" });
@@ -419,7 +406,7 @@ namespace Test.Controllers
         [HttpPut]
         [Route("Update Login")]
         public async Task<IActionResult> UpdateLogin([Required] string login, [Required][RegularExpression("[a-zA-Z0-9]+", ErrorMessage = "Некорректный логин")] string new_login)
-        {          
+        {
             if (db.Users.FirstOrDefault(x => x.Login == User.Identity.Name).Admin)
             {
                 if (db.Users.FirstOrDefault(x => x.Login == login) != null)
@@ -430,6 +417,8 @@ namespace Test.Controllers
                         return BadRequest(new { Message = "This login is already exists" });
                     }
                     _user.Login = new_login;
+                    _user.ModifiedBy = User.Identity.Name;
+                    _user.ModifiedOn = d;
                     await db.SaveChangesAsync();
                 }
                 else
@@ -453,6 +442,8 @@ namespace Test.Controllers
                 }
                 User _user = await db.Users.FirstOrDefaultAsync(x => x.Login == login);
                 _user.Login = new_login;
+                _user.ModifiedBy = login;
+                _user.ModifiedOn = d;
                 await db.SaveChangesAsync();
             }
             return Ok(new { Message = "Success" });
@@ -497,7 +488,11 @@ namespace Test.Controllers
                     {
                         _user.Gender = (int)Gender;
                     }
-
+                    if (Gender != null || Birtday != null || Name != null)
+                    {
+                        _user.ModifiedBy = User.Identity.Name;
+                        _user.ModifiedOn = d;
+                    }
                     await db.SaveChangesAsync();
                 }
                 else
@@ -528,7 +523,11 @@ namespace Test.Controllers
                 {
                     _user.Gender = (int)Gender;
                 }
-
+                if(Gender != null || Birtday != null || Name != null)
+                {
+                    _user.ModifiedBy = login;
+                    _user.ModifiedOn = d;
+                }
                 await db.SaveChangesAsync();
             }
             return Ok(new { Message = "Success" });
@@ -542,6 +541,5 @@ namespace Test.Controllers
 
 
 
-   
-}
 
+}

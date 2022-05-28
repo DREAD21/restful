@@ -11,24 +11,19 @@
         </member>
         <member name="M:Test.Controllers.TestController.AuthenticateUser(Test.Models.LoginModel)">
             <summary>  
-            Hardcoded the User authentication  
+            
             </summary>  
             <param name="login"></param>  
             <returns></returns>  
         </member>
         <member name="M:Test.Controllers.TestController.Login(Test.Models.LoginModel)">
             <summary>  
-            Login Authenticaton using JWT Token Authentication  
+            Login Authenticaton using JWT Token Authentication 
+            
             </summary>  
             <param name="data"></param>  
             <returns></returns>  
             <response code="400">Wrong Login or Password</response>
-        </member>
-        <member name="M:Test.Controllers.TestController.Get">
-            <summary>  
-            Authorize the Method  
-            </summary>  
-            <returns></returns>  
         </member>
         <member name="M:Test.Controllers.TestController.CreateUser(System.String,System.String,System.String,System.Boolean,System.Int32,System.Nullable{System.DateTime})">
             <summary>

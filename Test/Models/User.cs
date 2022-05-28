@@ -12,19 +12,12 @@ namespace Test.Models
         [Key]
         public Guid Guid { get; set; }
         [Required]
-        [Display(Name = ("Запрещены все символы кроме латинских букв и цифр"))]
-        [RegularExpression(@"[0-9a-zA-Z]+", ErrorMessage = "Некорректный логин")]
         public string Login { get; set; }
         [Required]
-        [Display(Name = ("Запрещены все символы кроме латинских букв и цифр"))]
-        [RegularExpression(@"[a-zA-Z0-9]+", ErrorMessage = "Некорректный пароль")]
         public string Password { get; set; }
         [Required]
-        [Display(Name = ("Запрещены все символы кроме латинских и русских букв"))]
-        [RegularExpression(@"[a-zA-Zа-яА-Я]+", ErrorMessage = "Некорректное имя")]
         public string Name { get; set; }
         [Required]
-        [RegularExpression(@"[0,1,2]")]
         public int Gender { get; set; }
         public DateTime? Birthday { get; set; }
         [Required]
