@@ -13,7 +13,7 @@ using Microsoft.IdentityModel.Tokens;
 using Test.Models;
 using System.Security.Claims;
 using Newtonsoft.Json;
-
+using System.Text.Json;
 
 namespace Test.Controllers
 {
@@ -142,8 +142,21 @@ namespace Test.Controllers
         /// <response code="400">Wrong data</response>
         [Authorize(Roles = "True"), Route("Create User")]
         [HttpPost]
-        public async Task<IActionResult> CreateUser([Required][RegularExpression("[0-9a-zA-Z]+", ErrorMessage = "Некорректное имя")] string Login, [Required][RegularExpression("[a-zA-Z0-9]+", ErrorMessage = "Некорректный пароль")] string Password, [Required][RegularExpression("[a-zA-Zа-яА-Я]+", ErrorMessage = "Некорректное имя")] string Name, [Required] bool Admin, [Required][RegularExpression("[0-2]")] int Gender, DateTime? Birthday)
+        public async Task<IActionResult> CreateUser([FromBody] JsonElement request)
         {
+            var jsonString = System.Text.Json.JsonSerializer.Deserialize<jsonElement>(request);
+            string Login = jsonString.Login;
+            var Password = jsonString.Password;
+            var Name = jsonString.Name;
+            var Gender = jsonString.Gender;
+            var Birthday = jsonString.Birthday;
+            var Admin = jsonString.Admin;
+
+            var context = new ValidationContext(jsonString);
+            var results = new List<ValidationResult>();
+
+            if (!Validator.TryValidateObject(jsonString, context, results, true))
+                return BadRequest();
 
             if (db.Users.FirstOrDefault(x => x.Login == Login) != null)
             {
